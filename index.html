@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>个人主页 | 你的名字</title>
+  <meta name="description" content="一个带有高级交互效果的个人主页模板" />
+  <style>
+    :root{
+      --bg:#0b1020;
+      --bg2:#101a33;
+      --card:rgba(15, 23, 42, .58);
+      --card2:rgba(255,255,255,.06);
+      --text:#eaf0ff;
+      --muted:#9fb0d0;
+      --line:rgba(255,255,255,.12);
+      --accent:#7c8cff;
+      --accent2:#7ef0c1;
+      --shadow: 0 20px 60px rgba(0,0,0,.35);
+      --radius: 24px;
+    }
+    [data-theme="light"]{
+      --bg:#f5f7ff;
+      --bg2:#eef3ff;
+      --card:rgba(255,255,255,.72);
+      --card2:rgba(20,30,60,.06);
+      --text:#111827;
+      --muted:#4b5563;
+      --line:rgba(17,24,39,.10);
+      --accent:#5468ff;
+      --accent2:#1dbf9c;
+      --shadow: 0 18px 50px rgba(55,65,81,.12);
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 700px at 15% 10%, rgba(124,140,255,.24), transparent 50%),
+        radial-gradient(900px 500px at 80% 20%, rgba(126,240,193,.18), transparent 55%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
+      min-height:100vh;
+      overflow-x:hidden;
+    }
+    .noise{
+      position:fixed; inset:0; pointer-events:none; opacity:.05;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+      mix-blend-mode:overlay;
+    }
+    .cursor-glow{
+      position:fixed; width:280px; height:280px; border-radius:50%;
+      pointer-events:none; z-index:0; filter:blur(55px);
+      background:radial-gradient(circle, rgba(124,140,255,.24), transparent 65%);
+      transform:translate(-50%,-50%);
+      opacity:.8;
+    }
+    .wrap{position:relative; z-index:1; width:min(1180px, calc(100% - 40px)); margin:0 auto;}
+    header{
+      position:sticky; top:0; z-index:20;
+      backdrop-filter: blur(18px);
+      background:linear-gradient(180deg, rgba(10,14,30,.78), rgba(10,14,30,.40));
+      border-bottom:1px solid var(--line);
+    }
+    [data-theme="light"] header{
+      background:linear-gradient(180deg, rgba(245,247,255,.88), rgba(245,247,255,.62));
+    }
+    .nav{
+      display:flex; align-items:center; justify-content:space-between;
+      height:74px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--text);
+      font-weight:700; letter-spacing:.2px;
+    }
+    .brand-badge{
+      width:38px; height:38px; border-radius:14px;
+      display:grid; place-items:center;
+      background:linear-gradient(135deg, var(--accent), var(--accent2));
+      color:white; font-weight:800; box-shadow:var(--shadow);
+    }
+    nav ul{
+      list-style:none; display:flex; gap:8px; margin:0; padding:0; flex-wrap:wrap;
+    }
+    nav a{
+      color:var(--muted); text-decoration:none; padding:10px 14px; border-radius:999px;
+      transition:.25s ease;
+      border:1px solid transparent;
+    }
+    nav a:hover, nav a.active{
+      color:var(--text);
+      background:var(--card2);
+      border-color:var(--line);
+    }
+    .actions{display:flex; gap:10px; align-items:center;}
+    .btn, .btn-ghost{
+      border:none; cursor:pointer; border-radius:999px; padding:12px 16px; font-weight:700;
+      transition:.25s ease;
+      color:var(--text);
+    }
+    .btn{
+      background:linear-gradient(135deg, var(--accent), #8b5cf6);
+      box-shadow:0 14px 30px rgba(84,104,255,.28);
+    }
+    .btn:hover{transform:translateY(-2px)}
+    .btn-ghost{
+      background:var(--card2); border:1px solid var(--line);
+    }
+    .hero{
+      padding:64px 0 26px;
+      display:grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap:28px;
+      align-items:stretch;
+    }
+    .panel{
+      background:linear-gradient(180deg, var(--card), rgba(255,255,255,.04));
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+    .hero-main{padding:38px;}
+    .eyebrow{
+      display:inline-flex; align-items:center; gap:10px;
+      padding:8px 12px; border-radius:999px;
+      background:var(--card2); border:1px solid var(--line); color:var(--muted);
+      font-size:14px;
+    }
+    .pulse{
+      width:9px;height:9px;border-radius:50%;
+      background:var(--accent2);
+      box-shadow:0 0 0 0 rgba(29,191,156,.6);
+      animation:pulse 1.8s infinite;
+    }
+    @keyframes pulse{
+      0%{box-shadow:0 0 0 0 rgba(29,191,156,.5)}
+      70%{box-shadow:0 0 0 14px rgba(29,191,156,0)}
+      100%{box-shadow:0 0 0 0 rgba(29,191,156,0)}
+    }
+    h1{
+      margin:18px 0 16px;
+      font-size: clamp(40px, 6vw, 72px);
+      line-height:1.05;
+      letter-spacing:-.03em;
+    }
+    .gradient-text{
+      background:linear-gradient(135deg, #9aa7ff, #8a6bff 40%, #64e7b7 90%);
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+    }
+    .lead{
+      max-width:60ch;
+      color:var(--muted);
+      font-size:18px;
+      line-height:1.8;
+      margin:0 0 24px;
+    }
+    .cta-row{display:flex; gap:12px; flex-wrap:wrap; margin-top:24px;}
+    .stats{
+      display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; margin-top:28px;
+    }
+    .stat{
+      padding:16px; border-radius:18px; background:rgba(255,255,255,.04); border:1px solid var(--line);
+    }
+    .stat strong{display:block; font-size:26px; margin-bottom:6px;}
+    .stat span{color:var(--muted); font-size:14px;}
+    .hero-side{padding:18px; display:flex; flex-direction:column; gap:18px;}
+    .profile{
+      padding:24px;
+      position:relative;
+      overflow:hidden;
+      min-height:310px;
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-end;
+    }
+    .avatar{
+      width:116px; height:116px; border-radius:32px;
+      background:linear-gradient(135deg, rgba(124,140,255,.9), rgba(126,240,193,.9));
+      box-shadow:0 18px 50px rgba(124,140,255,.25);
+      display:grid; place-items:center;
+      font-size:42px; font-weight:800; color:white;
+      margin-bottom:18px;
+      position:relative;
+      overflow:hidden;
+    }
+    .avatar::after{
+      content:""; position:absolute; inset:-40%;
+      background:linear-gradient(45deg, transparent, rgba(255,255,255,.35), transparent);
+      transform:rotate(20deg);
+      animation:shine 4.5s linear infinite;
+    }
+    @keyframes shine{from{transform:translateX(-30%) rotate(20deg)} to{transform:translateX(30%) rotate(20deg)}}
+    .profile h2{margin:0 0 8px; font-size:26px}
+    .profile p{margin:0; color:var(--muted); line-height:1.7}
+    .mini-grid{
+      display:grid; grid-template-columns:repeat(2, 1fr); gap:14px;
+    }
+    .mini{
+      padding:18px; min-height:110px;
+    }
+    .mini b{font-size:14px; color:var(--muted); display:block; margin-bottom:10px;}
+    .mini strong{font-size:22px; display:block;}
+    .mini small{color:var(--muted)}
+    section{padding:24px 0;}
+    .section-title{
+      display:flex; justify-content:space-between; align-items:end; gap:20px;
+      margin:18px 0 18px;
+    }
+    .section-title h3{
+      margin:0; font-size:30px; letter-spacing:-.02em;
+    }
+    .section-title p{margin:0; color:var(--muted); max-width:56ch}
+    .grid-2{display:grid; grid-template-columns: 1fr 1fr; gap:18px;}
+    .grid-3{display:grid; grid-template-columns: repeat(3, 1fr); gap:18px;}
+    .card{
+      padding:24px;
+      position:relative;
+      overflow:hidden;
+    }
+    .card::before{
+      content:""; position:absolute; inset:auto -20% -30% auto; width:240px; height:240px;
+      background:radial-gradient(circle, rgba(124,140,255,.18), transparent 65%);
+      pointer-events:none;
+    }
+    .skill{
+      display:flex; justify-content:space-between; align-items:center; margin:0 0 10px; color:var(--text);
+    }
+    .bar{
+      height:10px; border-radius:999px; background:rgba(255,255,255,.06); overflow:hidden; border:1px solid var(--line);
+      margin-bottom:18px;
+    }
+    .bar > span{
+      display:block; height:100%; border-radius:inherit;
+      background:linear-gradient(90deg, var(--accent), var(--accent2));
+      width:0;
+      transition:width 1.2s cubic-bezier(.2,.8,.2,1);
+    }
+    .project{
+      padding:0; overflow:hidden; cursor:pointer;
+      transform-style:preserve-3d;
+      transition:transform .25s ease, border-color .25s ease;
+    }
+    .project:hover{transform:translateY(-6px) scale(1.01)}
+    .project .thumb{
+      height:180px; background:
+        linear-gradient(135deg, rgba(124,140,255,.15), rgba(29,191,156,.12)),
+        radial-gradient(circle at 20% 20%, rgba(255,255,255,.22), transparent 24%),
+        linear-gradient(140deg, #172033, #0d1528);
+      border-bottom:1px solid var(--line);
+      display:flex; align-items:flex-end; padding:20px;
+    }
+    .project .thumb .chip{
+      padding:8px 12px; border-radius:999px;
+      background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.12);
+      backdrop-filter: blur(8px);
+      font-size:13px;
+    }
+    .project .body{padding:20px}
+    .project h4{margin:0 0 10px; font-size:20px}
+    .project p{margin:0 0 16px; color:var(--muted); line-height:1.7}
+    .tags{display:flex; gap:8px; flex-wrap:wrap}
+    .tag{
+      font-size:12px; padding:7px 10px; border-radius:999px;
+      background:var(--card2); border:1px solid var(--line); color:var(--muted)
+    }
+    .timeline{
+      display:grid; gap:14px;
+    }
+    .item{
+      display:grid; grid-template-columns: 140px 1fr; gap:18px;
+      padding:20px;
+    }
+    .item time{
+      color:var(--accent2); font-weight:700; letter-spacing:.02em;
+    }
+    .item h4{margin:0 0 6px}
+    .item p{margin:0; color:var(--muted); line-height:1.7}
+    .contact{
+      display:grid; grid-template-columns: 1.05fr .95fr; gap:18px;
+      align-items:stretch;
+    }
+    .form{
+      padding:24px;
+    }
+    .field{margin-bottom:14px}
+    label{display:block; margin-bottom:8px; font-size:14px; color:var(--muted)}
+    input, textarea{
+      width:100%; border-radius:16px; border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--text); padding:14px 16px; outline:none;
+      font:inherit;
+    }
+    textarea{min-height:130px; resize:vertical}
+    input:focus, textarea:focus{border-color:rgba(124,140,255,.7); box-shadow:0 0 0 4px rgba(124,140,255,.12)}
+    .socials{
+      display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;
+    }
+    .social{
+      padding:18px; border-radius:18px;
+      background:var(--card2); border:1px solid var(--line);
+      text-decoration:none; color:var(--text);
+      transition:.2s ease;
+    }
+    .social:hover{transform:translateY(-2px); border-color:rgba(124,140,255,.5)}
+    footer{
+      padding:26px 0 46px;
+      color:var(--muted);
+      text-align:center;
+    }
+    .reveal{opacity:0; transform:translateY(20px); transition:opacity .8s ease, transform .8s ease;}
+    .reveal.show{opacity:1; transform:none;}
+    .floating{
+      position:fixed; right:18px; bottom:18px; z-index:25;
+      display:flex; gap:10px;
+    }
+    .fab{
+      width:48px; height:48px; border-radius:16px;
+      display:grid; place-items:center;
+      background:var(--card); border:1px solid var(--line); color:var(--text);
+      box-shadow:var(--shadow);
+      cursor:pointer;
+      backdrop-filter: blur(18px);
+    }
+    .fab:hover{transform:translateY(-2px)}
+    .tooltip{
+      position:fixed; left:50%; bottom:20px; transform:translateX(-50%) translateY(18px);
+      opacity:0; pointer-events:none;
+      padding:10px 14px; border-radius:999px;
+      background:rgba(15,23,42,.9); color:#fff; font-size:14px;
+      transition:.25s ease;
+    }
+    .tooltip.show{opacity:1; transform:translateX(-50%) translateY(0)}
+    @media (max-width: 980px){
+      .hero, .grid-2, .grid-3, .contact{grid-template-columns:1fr;}
+      nav ul{display:none}
+      .stats{grid-template-columns:1fr}
+      .item{grid-template-columns:1fr}
+      .mini-grid{grid-template-columns:1fr 1fr}
+    }
+    @media (max-width: 640px){
+      .wrap{width:min(100% - 24px, 1180px)}
+      .hero-main, .profile, .card, .form, .item{padding:18px}
+      .stats{gap:10px}
+      .mini-grid{grid-template-columns:1fr}
+      .section-title{flex-direction:column; align-items:start}
+      .actions .btn-ghost{display:none}
+    }
+  </style>
+</head>
+<body data-theme="dark">
+  <div class="noise"></div>
+  <div class="cursor-glow" id="glow"></div>
+
+  <header>
+    <div class="wrap nav">
+      <a class="brand" href="#home">
+        <div class="brand-badge">你</div>
+        <div>
+          <div>你的名字</div>
+          <small style="color:var(--muted); font-weight:500;">Interactive Personal Site</small>
+        </div>
+      </a>
+
+      <nav>
+        <ul>
+          <li><a href="#about">关于</a></li>
+          <li><a href="#skills">技能</a></li>
+          <li><a href="#projects">项目</a></li>
+          <li><a href="#timeline">经历</a></li>
+          <li><a href="#contact">联系</a></li>
+        </ul>
+      </nav>
+
+      <div class="actions">
+        <button class="btn-ghost" id="copyBtn">复制邮箱</button>
+        <button class="btn" id="themeBtn">切换主题</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap" id="home">
+    <section class="hero">
+      <div class="panel hero-main reveal">
+        <span class="eyebrow"><span class="pulse"></span><span>欢迎来到我的主页 · 这是一个可直接上线的模板</span></span>
+        <h1><span class="gradient-text">做事有审美</span><br/>也要有交互。</h1>
+        <p class="lead">
+          这是一个高级交互感的个人网页模板：带主题切换、滚动出现动画、打字效果、鼠标光晕、技能进度条和项目卡片。
+          你可以直接改成自己的姓名、简介、项目和联系方式。
+        </p>
+        <div class="cta-row">
+          <a class="btn" href="#projects" style="text-decoration:none; display:inline-flex; align-items:center;">查看项目</a>
+          <a class="btn-ghost" href="#contact" style="text-decoration:none; display:inline-flex; align-items:center;">联系我</a>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <strong data-count="12">0</strong>
+            <span>完成项目</span>
+          </div>
+          <div class="stat">
+            <strong data-count="4">0</strong>
+            <span>主力技能栈</span>
+          </div>
+          <div class="stat">
+            <strong data-count="365">0</strong>
+            <span>全年持续更新</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-side">
+        <div class="panel profile reveal">
+          <div class="avatar" aria-label="头像">LXH</div>
+          <h2 id="typed">你好，我是一个创作者。</h2>
+          <p>
+            专注前端、设计、自动化和把想法做成能用的产品。喜欢干净的界面，也喜欢有效的交互。
+          </p>
+        </div>
+
+        <div class="mini-grid">
+          <div class="panel mini reveal">
+            <b>所在地</b>
+            <strong>中国</strong>
+            <small>可替换成你的城市</small>
+          </div>
+          <div class="panel mini reveal">
+            <b>状态</b>
+            <strong>可合作</strong>
+            <small>项目 / 兼职 / 外包</small>
+          </div>
+          <div class="panel mini reveal">
+            <b>喜欢</b>
+            <strong>AI + Web</strong>
+            <small>工具、页面、自动化</small>
+          </div>
+          <div class="panel mini reveal">
+            <b>版本</b>
+            <strong>v1.0</strong>
+            <small>可继续升级</small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="reveal">
+      <div class="section-title">
+        <h3>关于我</h3>
+        <p>用一段简短但有记忆点的介绍，把你是谁、擅长什么、想做什么讲清楚。</p>
+      </div>
+      <div class="panel card">
+        <p style="margin:0; line-height:1.85; color:var(--muted); font-size:17px;">
+          我是一个喜欢把复杂事情做简单的人。做页面时，我关注视觉层次、动效节奏和信息表达；做项目时，我更在意结果能不能真正被使用。
+          这份主页的设计思路就是：不堆信息，但每个交互都要有作用。
+        </p>
+      </div>
+    </section>
+
+    <section id="skills" class="reveal">
+      <div class="section-title">
+        <h3>技能</h3>
+        <p>下面这些进度条会在滚动到区域时自动填充。你可以改成自己的真实能力。</p>
+      </div>
+      <div class="grid-2">
+        <div class="panel card">
+          <div class="skill"><span>HTML / CSS</span><span>95%</span></div>
+          <div class="bar"><span data-bar="95"></span></div>
+          <div class="skill"><span>JavaScript</span><span>88%</span></div>
+          <div class="bar"><span data-bar="88"></span></div>
+          <div class="skill"><span>React / Vue</span><span>82%</span></div>
+          <div class="bar"><span data-bar="82"></span></div>
+          <div class="skill"><span>UI 设计</span><span>76%</span></div>
+          <div class="bar"><span data-bar="76"></span></div>
+        </div>
+
+        <div class="panel card">
+          <h4 style="margin-top:0;">工作方式</h4>
+          <p style="color:var(--muted); line-height:1.8;">
+            喜欢先搭骨架，再补细节。先把信息结构做对，再处理视觉和动效。
+            这样页面不会花哨但没重点。
+          </p>
+          <div class="tags" style="margin-top:16px;">
+            <span class="tag">响应式设计</span>
+            <span class="tag">细节动效</span>
+            <span class="tag">可访问性</span>
+            <span class="tag">快速交付</span>
+            <span class="tag">可维护性</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="projects" class="reveal">
+      <div class="section-title">
+        <h3>项目展示</h3>
+        <p>点击卡片可切换高亮状态，适合放作品集、项目截图、链接和标签。</p>
+      </div>
+      <div class="grid-3">
+        <article class="panel project">
+          <div class="thumb"><span class="chip">Web App</span></div>
+          <div class="body">
+            <h4>个人作品集</h4>
+            <p>展示作品、经历和联系方式，适合求职或个人品牌主页。</p>
+            <div class="tags">
+              <span class="tag">Next.js</span><span class="tag">动画</span><span class="tag">SEO</span>
+            </div>
+          </div>
+        </article>
+        <article class="panel project">
+          <div class="thumb"><span class="chip">Tooling</span></div>
+          <div class="body">
+            <h4>自动化工具站</h4>
+            <p>把重复性任务做成在线工具，比如转换、生成、整理类小站。</p>
+            <div class="tags">
+              <span class="tag">API</span><span class="tag">效率</span><span class="tag">实用</span>
+            </div>
+          </div>
+        </article>
+        <article class="panel project">
+          <div class="thumb"><span class="chip">AI Product</span></div>
+          <div class="body">
+            <h4>AI 交互页面</h4>
+            <p>展示 AI 能力、聊天界面、提示词流和结果预览，适合做概念产品。</p>
+            <div class="tags">
+              <span class="tag">OpenAI</span><span class="tag">前沿</span><span class="tag">体验</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="timeline" class="reveal">
+      <div class="section-title">
+        <h3>经历</h3>
+        <p>这个区域适合放你的学习、工作、实习或项目时间线。</p>
+      </div>
+      <div class="panel timeline">
+        <div class="item">
+          <time>2026 · 现在</time>
+          <div>
+            <h4>搭建个人品牌主页</h4>
+            <p>开始整理作品、技能和联系信息，把零散内容集中成一个可公开访问的入口。</p>
+          </div>
+        </div>
+        <div class="item" style="border-top:1px solid var(--line);">
+          <time>2025 · 进行中</time>
+          <div>
+            <h4>学习前端与 AI 工具链</h4>
+            <p>结合 HTML/CSS/JS、Git、Node.js、Codex 等工具，提升开发效率。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="reveal">
+      <div class="section-title">
+        <h3>联系我</h3>
+        <p>表单是演示用的，不会真的发出去。你可以接上邮箱服务或后端接口。</p>
+      </div>
+
+      <div class="contact">
+        <div class="panel form">
+          <div class="field">
+            <label>你的名字</label>
+            <input type="text" placeholder="例如：LXH" />
+          </div>
+          <div class="field">
+            <label>邮箱</label>
+            <input id="email" type="email" value="you@example.com" />
+          </div>
+          <div class="field">
+            <label>留言</label>
+            <textarea placeholder="简单说一下你想合作或联系的内容。"></textarea>
+          </div>
+          <button class="btn" id="fakeSubmit">发送消息</button>
+        </div>
+
+        <div class="panel card">
+          <h4 style="margin-top:0;">社交链接</h4>
+          <div class="socials">
+            <a class="social" href="javascript:void(0)">GitHub</a>
+            <a class="social" href="javascript:void(0)">Bilibili</a>
+            <a class="social" href="javascript:void(0)">X / Twitter</a>
+            <a class="social" href="javascript:void(0)">微信</a>
+          </div>
+          <p style="margin-top:18px; color:var(--muted); line-height:1.8;">
+            这里可以放你的公众号、邮箱、GitHub、QQ、微信二维码或作品集链接。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div>© 2026 你的名字 · Built with HTML / CSS / JS</div>
+    </footer>
+  </main>
+
+  <div class="floating">
+    <button class="fab" id="topBtn" title="回到顶部">↑</button>
+  </div>
+  <div class="tooltip" id="tip">已复制邮箱</div>
+
+  <script>
+    const body = document.body;
+    const themeBtn = document.getElementById('themeBtn');
+    const glow = document.getElementById('glow');
+    const tip = document.getElementById('tip');
+    const copyBtn = document.getElementById('copyBtn');
+    const email = document.getElementById('email');
+    const topBtn = document.getElementById('topBtn');
+    const fakeSubmit = document.getElementById('fakeSubmit');
+    const typed = document.getElementById('typed');
+    const navLinks = [...document.querySelectorAll('nav a')];
+    const reveals = [...document.querySelectorAll('.reveal')];
+    const bars = [...document.querySelectorAll('[data-bar]')];
+    const counters = [...document.querySelectorAll('[data-count]')];
+    const projects = [...document.querySelectorAll('.project')];
+
+    let theme = localStorage.getItem('theme') || 'dark';
+    body.setAttribute('data-theme', theme);
+    themeBtn.textContent = theme === 'dark' ? '切换浅色' : '切换深色';
+
+    themeBtn.addEventListener('click', () => {
+      theme = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      body.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      themeBtn.textContent = theme === 'dark' ? '切换浅色' : '切换深色';
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      glow.style.left = e.clientX + 'px';
+      glow.style.top = e.clientY + 'px';
+    });
+
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('show');
+          if (entry.target.id === 'skills' || entry.target.querySelector('[data-bar]')) {
+            bars.forEach(bar => bar.style.width = bar.dataset.bar + '%');
+          }
+          if (entry.target.id === 'home' || entry.target.querySelector('[data-count]')) {
+            counters.forEach(counter => {
+              const target = +counter.dataset.count;
+              let n = 0;
+              const step = Math.max(1, Math.ceil(target / 50));
+              const timer = setInterval(() => {
+                n += step;
+                if (n >= target) { n = target; clearInterval(timer); }
+                counter.textContent = n;
+              }, 18);
+            });
+          }
+        }
+      });
+    }, { threshold: 0.18 });
+
+    reveals.forEach(el => io.observe(el));
+
+    const navIO = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + entry.target.id));
+        }
+      })
+    }, { threshold: 0.55 });
+
+    ['about','skills','projects','timeline','contact'].forEach(id => {
+      const sec = document.getElementById(id);
+      if (sec) navIO.observe(sec);
+    });
+
+    let index = 0;
+    const words = ['你好，我是一个创作者。', '我喜欢做高级交互。', '我也喜欢把想法做成网页。'];
+    setInterval(() => {
+      index = (index + 1) % words.length;
+      typed.style.opacity = 0;
+      setTimeout(() => {
+        typed.textContent = words[index];
+        typed.style.opacity = 1;
+      }, 180);
+    }, 2400);
+
+    copyBtn.addEventListener('click', async () => {
+      try{
+        await navigator.clipboard.writeText(email.value);
+        tip.classList.add('show');
+        setTimeout(() => tip.classList.remove('show'), 1400);
+      }catch(e){
+        alert('复制失败，请手动复制邮箱。');
+      }
+    });
+
+    topBtn.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
+
+    fakeSubmit.addEventListener('click', () => {
+      const btn = fakeSubmit;
+      const old = btn.textContent;
+      btn.textContent = '已发送（演示）';
+      btn.disabled = true;
+      setTimeout(() => {
+        btn.textContent = old;
+        btn.disabled = false;
+      }, 1800);
+    });
+
+    projects.forEach(card => {
+      card.addEventListener('click', () => {
+        projects.forEach(x => x.style.outline = 'none');
+        card.style.outline = '2px solid rgba(124,140,255,.7)';
+        card.style.outlineOffset = '2px';
+      });
+    });
+  </script>
+</body>
+</html>
